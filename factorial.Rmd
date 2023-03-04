@@ -1,0 +1,611 @@
+---
+title: "Diseños Factoriales"
+subtitle: "Una Introducción"  
+author: Carlos Puma
+#role: ""
+company: UNSA
+#date: '`r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    seal: false
+    nature:
+      slideNumberFormat: "%current%"
+      highlightStyle: github
+      highlightLines: true
+      ratio: 16:9
+      countIncrementalSlides: true
+---
+
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_duo_accent(
+  primary_color = "#1381B0",
+  secondary_color = "#FF961C",
+  inverse_header_color = "#FFFFFF"
+)
+```
+
+```{r xaringan-extra-styles, echo=FALSE}
+xaringanExtra::use_extra_styles(hover_code_line = TRUE, mute_unhighlighted_code = FALSE)
+```
+
+```{r xaringanExtra-clipboard, echo=FALSE}
+xaringanExtra::use_clipboard(
+  button_text = "Haga clic para copiar",
+  success_text = "Copiado",
+  error_text = "Pulse Ctrl + C para copiar"
+)
+```
+
+```{r include=FALSE}
+ipak <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+
+packages <- c("parameters","apa","haven","ggplot2","ggpubr","gridExtra",
+              "apaTables", "reshape", "GPArotation", "mvtnorm", "psych", 
+              "psychometric", "lavaan", "nFactors", "semPlot", "lavaan", 
+              "MVN", "semTools","foreign","readxl","dplyr","parameters",
+              "apa","haven","ggplot2","ggpubr","gridExtra","apaTables", 
+              "reshape", "GPArotation", "mvtnorm", "psych", "psychometric",                         "lavaan", "nFactors", "semPlot", "lavaan", "MVN", "semTools")
+              
+ipak(packages)
+library(tidyverse)
+library(dplyr) 
+library(corrr)
+library(correlation)
+library(corrplot)
+library(ggcorrplot)
+library(nortest)
+library(car)
+library(rempsyc)
+library(magrittr)
+library(flextable)
+library(officer)
+library(knitr)
+library(data.table)
+library(report)
+library(parameters)
+```
+
+```{r xaringan-tachyons, echo=FALSE}
+xaringanExtra::use_tachyons()
+```
+
+```{r xaringan-panelset, echo=FALSE}
+xaringanExtra::use_panelset()
+```
+
+class: title-slide, left, middle
+background-image: url("https://pbs.twimg.com/media/FpxESM6aUAAtCTV?format=jpg&name=small")
+background-position: right
+background-size: contain
+background-color: #A53860
+
+.pull-left[
+
+# `r rmarkdown::metadata$title`
+
+## `r rmarkdown::metadata$subtitle`
+
+### `r rmarkdown::metadata$date`
+]
+---
+
+name: contents-slide
+## Indice de Contenidos
+        
+1. [Instalar y llamar a los paquetes para trabajar](#Instalar)
+2. [La normalidad de los datos e Igualdad de varianzas](#normalidad)
+3. [Diseños Completamente Aleatorios (DCA)](#DCA)
+4. [Diseños de Bloques Completos Aleatorios (DBCA)](#DBCA)
+5. [Diseño Cuadrado Latino (DCL)](#DCL)
+6. [Diseño Factorial (2k)](#2k)
+7. [Fórmulas de diseños 3k y 4k](#Formula)
+
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #005F73
+name: Instalar
+
+## Instalar y llamar a los paquetes para trabajar
+<hr>
+
+---
+## Llamar a los paquetes
+
+En este caso tenemos que usar el siguiente código para poder proceder con los análisis sin ningún problema. Este código nos instala y llama a todos los paquetes necesarios. Solo damos **Control + Enter** al comienzo de las 3 lineas **Ipak** + **packages** y **ipak(packages)**
+
+
+````markdown
+ipak <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+
+packages <- c("parameters","apa","haven","ggplot2","ggpubr","gridExtra","apaTables",                  "reshape", "GPArotation", "mvtnorm", "psych","psychometric", "lavaan",                  "nFactors", "semPlot","MVN","semTools","foreign","readxl", "dplyr",                     "parameters","apa","haven","ggplot2","ggpubr","gridExtra","reshape"
+              "GPArotation", "mvtnorm", "psych", "psychometric","lavaan",
+              "semPlot","corrr","correlation","corrplot","ggcorrplot","nortest","car",
+              "rempsyc","magrittr","flextable","officer","knitr","data.table","report",
+              "parameters")
+              
+ipak(packages)
+library(tidyverse) # En el caso de este paquete solo se da Control + Enter 
+library(dplyr) # En el caso de este paquete solo se da Control + Enter 
+```
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #8F250C
+name: yo
+
+# Regresar a [Indice de Contenidos](#contents-slide)
+---
+
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #004B23
+name: normalidad
+
+## La normalidad de los datos e Igualdad de varianzas
+<hr>
+
+---
+#### Para iniciar con el analisis, primero debemos obtener dos cosas:
+
+1. La normalidad de los datos (Kolmogorov y Shapiro)
+2. La igualdad de varianzas (Prueba de Levene)
+
+Y para obtener estos resultados debemos tener en cuenta la interpretación de estos dos pues, estos se leen de la misma manera
+
+- Refiriéndonos al análisis del p valor 0.05, siendo el ejemplo de esto
+
+````markdown
+shapiro.test(datos$genemotiva) 
+```
+
+```{r}
+shapiro.test(datos$genemotiva) 
+```
+En este caso el resultado del **p-value** es menor a 0.05 ya que salio mucho menos **p-value = 3.435e-09** por lo que se puede interpretar que la variable ***genemotiva*** no tiene normalidad.
+
+---
+
+Caso contrario es cuando obtenernos un valor p mayor a 0.05, pues esto nos indicaría que los datos son normales. Como en el siguiente caso, en el cual la variable **Ansiedad** sus resultados muestran que es normal, debido a que su **p-value = 0.0537** es mayor a 0.05
+
+```{r include=FALSE}
+datosnopara <- read_sav("D:\\ANALISIS FACTORIAL R\\Estadistica_curso\\Materiales drive _ Curso EstadySPSS_Jamovi\\05 Bases de datos de la parte práctica\\04.Análisis inferencial no paramétrico\\1 Comp de grupos independs\\Comp de dos grupos independ_ no paramét.sav")
+```
+
+```{r include=FALSE}
+datosnoparame <- read_sav("D:\\ANALISIS FACTORIAL R\\Estadistica_curso\\Materiales drive _ Curso EstadySPSS_Jamovi\\05 Bases de datos de la parte práctica\\04.Análisis inferencial no paramétrico\\1 Comp de grupos independs\\Comp de más de dos grupos independ_ no paramét.sav")
+```
+
+```{r include=FALSE}
+datos<-read_sav("D:\\INVESTIGACIÓN\\Comunicación y empatia\\Analisis\\comuyempa para jamovi.sav")
+datoscorre <- dplyr::select(datos, genemotiva:expreemocional)
+```
+
+````markdown
+shapiro.test(datosnoparame$Ansiedad) 
+```
+
+```{r echo=FALSE}
+shapiro.test(datosnoparame$Ansiedad) 
+```
+
+En el caso anterior hemos observado el uso del **Shapiro**, pero este solo se utiliza cuando la cantidad de nuestros datos son menores a 50, en el caso de que tengamos más de 50 datos o encuestados, debemos usar **Kolmogorov**
+
+````markdown
+lillie.test(datos$empatiaafectiva)
+```
+```{r echo=FALSE}
+lillie.test(datos$empatiaafectiva)
+```
+Aqui según el **p-value = 8.337e-13** se puede observar que es menor a 0.05 por lo que se puede interpretar que la variable **empatiaafectiva** no tiene una normalidad.
+
+
+---
+
+Teniendo en cuenta la normalidad de los datos, ahora vamos a pasar a la **Prueba de Levene** que verificará la igualdad de varianzas
+
+Para tener los resultados de la prueba de levene debemos colocar el siguiente código
+
+````markdown
+leveneTest(datosnopara$AreaIV, # Primero definimos nuestra variable o dimensión a la que querremos analizar
+           group = datosnopara$Sexo, # Aqui definimos nuestros grupo, en este caso seria por sexo
+           data = datosnopara # Y por último de que base de datos de donde estamos sacado la variable y el grupo 
+           )
+
+En este caso debemos utilizar el simbolo "$" para poder espeficiar mejor las variable, solo es escribir asi "basededatos$variable"
+```
+
+```{r}
+leveneTest(datosnopara$AreaIV, group = datosnopara$Sexo, data = datosnopara)
+
+```
+Como se puede ver los resultados muestran que nuestro p-value es **0.3846** siendo esto mayor a 0.05, siendo la interpretación: La variable AreaIV muestra que tiene igualdad de varianzas, pues el valor p es mayor a 0.05.
+
+Si el resultado del valor p es menor a 0.05 se diría que no existen iguadad de varianzas
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #8F250C
+name: yo
+
+# Regresar a [Indice de Contenidos](#contents-slide)
+---
+
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #A53860
+name: DCA
+
+## Diseños Completamente Aleatorios (DCA)
+<hr>
+
+---
+
+<br>
+<br><br>
+### En un diseño completamente al azar , solo se considera un factor principal en el experimento. Los sujetos de prueba se asignan a los niveles de tratamiento del factor primario al azar.
+
+La formula con la cual nos guiaríamos para plantearlo en R seria la siguiente
+
+> **Respuesta  = constante  + efecto del tratamiento  + error **
+
+- En este caso la respuesta es la que obtendríamos después del analisis que estamos realizando
+- La constante ya esta implícita, por lo que no se obvia
+- El efecto del tratamiento, es con que hemos intervenido
+- El error al igual que la constante esta implícita por lo que también se obvia
+
+Ahora veamos como seria el procedimiento, y para esto vamos a utilizar los siguientes códigos
+
+---
+<br><br>
+
+```{r include=FALSE}
+dca <- read_excel("D:\\Tesis investigación\\Diseños experimentales\\excels\\DCA_1.xlsx")
+```
+
+```{r include=FALSE}
+dbca <- read_excel("D:\\Tesis investigación\\Diseños experimentales\\excels\\DBCA_1.xlsx")
+```
+
+```{r include=FALSE}
+dcl <- read_excel("D:\\Tesis investigación\\Diseños experimentales\\excels\\DCL_1.xlsx")
+```
+
+```{r include=FALSE}
+facto <- read_excel("D:\\Tesis investigación\\Diseños experimentales\\excels\\factorial.xlsx")
+```
+
+#### Primero iniciamos con llamar nuestra base de datos, vamos a utilizar el código **read_**, en este caso estoy utilizando **excel** donde estan mis datos
+
+````markdown
+dca <- read_excel("D:\\Tesis investigación\\Diseños experimentales\\excels\\DCA_1.xlsx")
+```
+Con la función **tail** se puede observar las filas de nuestra base de datos
+
+````markdown
+tail(dca)
+```
+```{r echo=FALSE}
+tail(dca)
+```
+
+Se puede observar que estan presentes las unidades experimentales **UE**, el tratamiento **trt** y la respuesta  **rpta**. Luego colocaríamos lo siguiente:
+
+
+---
+
+Colocamos la función **aov** que es ANOVA y luego entre parentesis, especificando de nuestra base de datos las variables respuesta y el tratamiento (refiriendonos a esto **dca$rpt*a** y **dca$trt**), teniendo esto entre las dos varaibles colocamos la **virgulilla** ( ~ )
+
+ ````markdown
+aov(dca$rpta ~ dca$trt)
+```
+
+Ahora lo guardamos este código **aov(dca$rpta ~ dca$trt)** utilizando un nombre X y <-, en este caso utilizamos **uno <-** para este ejemplo
+
+ ````markdown
+uno <- aov(dca$rpta ~ dca$trt) 
+```
+```{r include=FALSE}
+uno <- aov(dca$rpta ~ dca$trt)
+```
+
+Ahora con la funicón summary podemos ver los resultados
+
+ ````markdown
+summary(uno)
+```
+
+```{r}
+summary(uno)
+```
+
+Interpretación
+Dado que el valor p (**Pr(>F)**) es menor a 0.05 por lo que podriamos interpretar que existen diferencias estadisticamente significativas
+
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #8F250C
+name: yo
+
+# Regresar a [Indice de Contenidos](#contents-slide)
+---
+
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #432818
+name: DBCA
+
+## Diseños de Bloques Completos Aleatorios (DBCA)
+<hr>
+
+---
+
+- **Para poder seguir este análisis vamos verificar también la normalidad de nuestros datos y la igualdad de varianzas**
+
+Primero vamos mostrar la formula para que entendamos como se plantean en R
+
+> **Respuesta  = constante + efecto de bloques + efecto del tratamiento  + error**
+
+- La **constante** y el **error** no se toman en consideración
+- La **Respuesta**, el **efecto de bloques** y el **efecto del tratamiento ** se consideran para el código
+
+Primero iniciamos con llamar nuestra base de datos y guardarla 
+
+````markdown
+dbca <- read_excel("D:\\Tesis investigación\\Diseños experimentales\\excels\\DBCA_1.xlsx")
+```
+Con la función **tail** se puede observar las filas de nuestra base de datos
+
+```{r echo=FALSE}
+tail(dbca)
+```
+
+Se puede observar que estan presentes el tratamiento **trt**, el bloque **Bloque** la respuesta  **rpta**. Luego colocaríamos lo siguiente:
+
+---
+
+<br>
+
+Colocamos la función **aov** que es ANOVA y luego entre parentesis, especificando de nuestra base de datos la variable respuesta, el tratamiento y el bloque (refiriéndonos a esto **dbca$rpta** y **dbca$bloque + dbca$trt)**, teniendo esto, luego colocamos la **virgulilla** ( ~ )
+
+Guardamos este código **aov(dbca$rpta ~ dbca$bloque + dbca$trt)** utilizando un nombre X y <-, en este caso utilizamos **dos <-** para este ejemplo
+
+ ````markdown
+dos <-aov(dbca$rpta ~ dbca$bloque + dbca$trt)
+```
+```{r include=FALSE}
+dos <-aov(dbca$rpta ~ dbca$bloque + dbca$trt)
+```
+
+Ahora con la función summary podemos ver los resultados
+
+
+```{r}
+summary(dos)
+```
+
+Interpretación
+Dado que el valor p **Pr(>F)** es menor a 0.05 (osea 0.0127), por lo que rechazamos la hipótesis nula y podemos decir que existen diferencias estadisiticamente significativas
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #8F250C
+name: yo
+
+# Regresar a [Indice de Contenidos](#contents-slide)
+---
+
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #926C15
+name: DCL
+
+## Diseño Cuadrado Latino (DCL)
+<hr>
+
+---
+
+- **Para poder seguir este análisis vamos verificar también la normalidad de nuestros datos y la igualdad de varianzas**
+
+Primero vamos mostrar la formula para que entendamos como se plantean en R
+
+> **Respuesta  = constante + efecto del tratamiento + efecto de la condición 1 (fila) + efecto de la condición 2 (columna) + error**
+
+Lo más importante que hay que tener es
+
+- La respuesta, los cuales serian los datos 
+- El efecto del tratamiento
+- Efecto de la condición 1 (fila)
+- Efecto de la condición 2 (columna)
+
+Ahora veamos como seria el procedimiento, y para esto vamos a utilizar los siguientes códigos
+
+Primero iniciamos con llamar nuestra base de datos, vamos a utilizar el código **read_**, en este caso estoy utilizando **excel** donde estan mis datos
+
+````markdown
+dcl <- read_excel("D:\\Tesis investigación\\Diseños experimentales\\excels\\DCL_1.xlsx")
+```
+Con la función **tail** se puede observar las filas de nuestra base de datos
+
+````markdown
+tail(dcl)
+```
+---
+
+```{r echo=FALSE}
+tail(dcl)
+```
+
+Se puede observar que estan presentes la respuesta **rpta**, el tratamiento **trt**, la fila **F** la columna **C**. Luego colocaríamos lo siguiente:
+
+Colocamos la función **aov** que es ANOVA y luego entre parentesis, especificando de nuestra base de datos las variables respuesta, el tratamiento, los datos de la Fila y Columna (refiriendonos a esto **dca$rpt*a** y **dcl$F + dcl$C + dcl$trt**), teniendo entre estos la **virgulilla** ( ~ )
+
+ ````markdown
+aov(dcl$rpta ~ dcl$F + dcl$C + dcl$trt)
+```
+
+Ahora lo guardamos este código **aov(dcl$rpta ~ dcl$F + dcl$C + dcl$trt)** utilizando un nombre X y <-, en este caso utilizamos **uno <-** para este ejemplo
+
+ ````markdown
+tres <- aov(dcl$rpta ~ dcl$F + dcl$C + dcl$trt)
+```
+```{r echo=FALSE}
+tres <- aov(dcl$rpta ~ dcl$F + dcl$C + dcl$trt)
+```
+
+Ahora con la funicón summary podemos ver los resultados
+
+ ````markdown
+summary(tres)
+```
+---
+
+<br><br>
+```{r echo=FALSE}
+summary(tres)
+```
+
+Interpretación
+Dado que el valor p (**Pr(>F)**) es menor a 0.05 por lo que podriamos interpretar que existen diferencias estadisticamente significativas
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #8F250C
+name: yo
+
+# Regresar a [Indice de Contenidos](#contents-slide)
+---
+
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #5C8001
+name: 2k
+
+## Diseño Factorial (2k)
+<hr>
+
+---
+
+<br>
+
+- **Para poder seguir este análisis vamos verificar también la normalidad de nuestros datos y la igualdad de varianzas**
+
+Primero vamos mostrar la formula para que entendamos como se plantean en R
+
+> **Respuesta = constante + efecto de A (Factor 1) + efecto de b (Factor 2) + + Interacción AXB + error**
+
+Lo que necesitamos para poder utilizar en R seria lo siguiente
+
+- La respuesta que seria lo obtenido en nuestros datos
+- Los efectos tanto de la A como B (osea los factores utilizados)
+- Con respecto a la interacción esta se va a obtener con las diferentes formas en que se escriba el código
+- Tanto el error como la constante se obvian 
+
+Luego iniciamos con llamar nuestra base de datos, vamos a utilizar el código **read_**, en este caso estoy utilizando **excel** donde estan mis datos
+
+````markdown
+facto <- read_excel("D:\\Tesis investigación\\Diseños experimentales\\excels\\factorial.xlsx")
+```
+```{r echo=FALSE}
+facto <- read_excel("D:\\Tesis investigación\\Diseños experimentales\\excels\\factorial.xlsx")
+```
+
+Con la función **tail** se puede observar las filas de nuestra base de datos
+
+````markdown
+tail(facto)
+```
+---
+
+```{r echo=FALSE}
+tail(facto)
+```
+
+Se pueden observar los datos y los niveles de estos.
+
+Nosotros ahora debemos tener en cuenta que hay varias formas para escribir el código de nuestros datos para los diseños factoriales, como serian:
+
+````markdown
+1. aov(facto$Y ~ facto$A + facto$B + facto$A:facto$B)
+2. aov(facto$Y ~ facto$A + facto$B + facto$A*facto$B)
+3. aov(facto$Y ~ facto$A*facto$B)
+```
+Y los resultados nos saldrían igual, pero para poder entender mejor el código vamos a plantearlo de la siguiente manera
+
+````markdown
+aov(facto$Y ~ facto$A + facto$B + facto$A*facto$B)
+```
+Guardamos nuestra formula 
+
+````markdown
+cuatro <- aov(facto$Y ~ facto$A + facto$B + facto$A*facto$B)
+```
+---
+
+name: Formula
+
+Y por último corremos **summary** y tendremos nuestros resultados
+
+````markdown
+summary(cuatro)
+```
+
+```{r echo=FALSE}
+cuatro <- aov(facto$Y ~ facto$A*facto$B)
+```
+
+```{r echo=FALSE}
+summary(cuatro)
+```
+
+Aquí se puede observar que con respecto a los factores A y B estos son estadisticamente significativos, pues sus valores p son menores a 0.05, sin embargo, con respecto a la interacción de estos factores no se muestra que exista esta. 
+
+Con respecto a como se podrían escribir factoriales de 3k, 4k o más, se puede plantear de la siguiente manera
+
+.panelset[
+.panel[.panel-name[3K]
+
+Fórmula y Código
+
+```prolog
+Respuesta = constante + efecto factor A + efecto factor B + efecto factor C + AB + AC + BC + ABC + error
+```
+````markdown
+aov(Respuesta ~ FactorA + FactorB + FactorC + A*B + A*C + B*C + A*B*C)
+```
+
+]
+
+.panel[.panel-name[4K]
+
+Fórmula y Código
+
+```prolog
+Respuesta = constante + efecto factor A + efecto factor B + efecto factor C efecto factor D + AB + AC + AD + BC + BD + CD + ABCD + error
+```
+````markdown
+aov(Respuesta ~ FactorA + FactorB + FactorC + FactorD + A*B + A*C + A*D + B*C + B*D + C*D + A*B*C*D)
+```
+]
+]
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #8F250C
+name: yo
+
+# Regresar a [Indice de Contenidos](#contents-slide)

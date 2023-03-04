@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Diseños Factoriales</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Carlos Puma" />
+    <script src="factorial_files/header-attrs-2.20/header-attrs.js"></script>
+    <link href="factorial_files/xaringanExtra-extra-styles-0.2.6/xaringanExtra-extra-styles.css" rel="stylesheet" />
+    <script src="factorial_files/clipboard-2.0.6/clipboard.min.js"></script>
+    <link href="factorial_files/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="factorial_files/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Haga clic para copiar","success":"Copiado","error":"Pulse Ctrl + C para copiar"})</script>
+    <link href="factorial_files/tachyons-4.12.0/tachyons.min.css" rel="stylesheet" />
+    <link href="factorial_files/panelset-0.2.6/panelset.css" rel="stylesheet" />
+    <script src="factorial_files/panelset-0.2.6/panelset.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class: title-slide, left, middle
+background-image: url("https://pbs.twimg.com/media/FpxESM6aUAAtCTV?format=jpg&amp;name=small")
+background-position: right
+background-size: contain
+background-color: #A53860
+
+.pull-left[
+
+# Diseños Factoriales
+
+## Una Introducción
+
+### 
+]
+---
+
+name: contents-slide
+## Indice de Contenidos
+        
+1. [Instalar y llamar a los paquetes para trabajar](#Instalar)
+2. [La normalidad de los datos e Igualdad de varianzas](#normalidad)
+3. [Diseños Completamente Aleatorios (DCA)](#DCA)
+4. [Diseños de Bloques Completos Aleatorios (DBCA)](#DBCA)
+5. [Diseño Cuadrado Latino (DCL)](#DCL)
+6. [Diseño Factorial (2k)](#2k)
+7. [Fórmulas de diseños 3k y 4k](#Formula)
+
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #005F73
+name: Instalar
+
+## Instalar y llamar a los paquetes para trabajar
+&lt;hr&gt;
+
+---
+## Llamar a los paquetes
+
+En este caso tenemos que usar el siguiente código para poder proceder con los análisis sin ningún problema. Este código nos instala y llama a todos los paquetes necesarios. Solo damos **Control + Enter** al comienzo de las 3 lineas **Ipak** + **packages** y **ipak(packages)**
+
+
+````markdown
+ipak &lt;- function(pkg){
+  new.pkg &lt;- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+
+packages &lt;- c("parameters","apa","haven","ggplot2","ggpubr","gridExtra","apaTables",                  "reshape", "GPArotation", "mvtnorm", "psych","psychometric", "lavaan",                  "nFactors", "semPlot","MVN","semTools","foreign","readxl", "dplyr",                     "parameters","apa","haven","ggplot2","ggpubr","gridExtra","reshape"
+              "GPArotation", "mvtnorm", "psych", "psychometric","lavaan",
+              "semPlot","corrr","correlation","corrplot","ggcorrplot","nortest","car",
+              "rempsyc","magrittr","flextable","officer","knitr","data.table","report",
+              "parameters")
+              
+ipak(packages)
+library(tidyverse) # En el caso de este paquete solo se da Control + Enter 
+library(dplyr) # En el caso de este paquete solo se da Control + Enter 
+```
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #8F250C
+name: yo
+
+# Regresar a [Indice de Contenidos](#contents-slide)
+---
+
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #004B23
+name: normalidad
+
+## La normalidad de los datos e Igualdad de varianzas
+&lt;hr&gt;
+
+---
+#### Para iniciar con el analisis, primero debemos obtener dos cosas:
+
+1. La normalidad de los datos (Kolmogorov y Shapiro)
+2. La igualdad de varianzas (Prueba de Levene)
+
+Y para obtener estos resultados debemos tener en cuenta la interpretación de estos dos pues, estos se leen de la misma manera
+
+- Refiriéndonos al análisis del p valor 0.05, siendo el ejemplo de esto
+
+````markdown
+shapiro.test(datos$genemotiva) 
+```
+
+
+```r
+shapiro.test(datos$genemotiva) 
+```
+
+```
+## 
+## 	Shapiro-Wilk normality test
+## 
+## data:  datos$genemotiva
+## W = 0.9725, p-value = 3.435e-09
+```
+En este caso el resultado del **p-value** es menor a 0.05 ya que salio mucho menos **p-value = 3.435e-09** por lo que se puede interpretar que la variable ***genemotiva*** no tiene normalidad.
+
+---
+
+Caso contrario es cuando obtenernos un valor p mayor a 0.05, pues esto nos indicaría que los datos son normales. Como en el siguiente caso, en el cual la variable **Ansiedad** sus resultados muestran que es normal, debido a que su **p-value = 0.0537** es mayor a 0.05
+
+
+
+
+
+
+
+````markdown
+shapiro.test(datosnoparame$Ansiedad) 
+```
+
+
+```
+## 
+## 	Shapiro-Wilk normality test
+## 
+## data:  datosnoparame$Ansiedad
+## W = 0.97786, p-value = 0.0537
+```
+
+En el caso anterior hemos observado el uso del **Shapiro**, pero este solo se utiliza cuando la cantidad de nuestros datos son menores a 50, en el caso de que tengamos más de 50 datos o encuestados, debemos usar **Kolmogorov**
+
+````markdown
+lillie.test(datos$empatiaafectiva)
+```
+
+```
+## 
+## 	Lilliefors (Kolmogorov-Smirnov) normality test
+## 
+## data:  datos$empatiaafectiva
+## D = 0.091096, p-value = 6.737e-13
+```
+Aqui según el **p-value = 8.337e-13** se puede observar que es menor a 0.05 por lo que se puede interpretar que la variable **empatiaafectiva** no tiene una normalidad.
+
+
+---
+
+Teniendo en cuenta la normalidad de los datos, ahora vamos a pasar a la **Prueba de Levene** que verificará la igualdad de varianzas
+
+Para tener los resultados de la prueba de levene debemos colocar el siguiente código
+
+````markdown
+leveneTest(datosnopara$AreaIV, # Primero definimos nuestra variable o dimensión a la que querremos analizar
+           group = datosnopara$Sexo, # Aqui definimos nuestros grupo, en este caso seria por sexo
+           data = datosnopara # Y por último de que base de datos de donde estamos sacado la variable y el grupo 
+           )
+
+En este caso debemos utilizar el simbolo "$" para poder espeficiar mejor las variable, solo es escribir asi "basededatos$variable"
+```
+
+
+```r
+leveneTest(datosnopara$AreaIV, group = datosnopara$Sexo, data = datosnopara)
+```
+
+```
+## Warning in leveneTest.default(datosnopara$AreaIV, group = datosnopara$Sexo, :
+## datosnopara$Sexo coerced to factor.
+```
+
+```
+## Levene's Test for Homogeneity of Variance (center = median: datosnopara)
+##        Df F value Pr(&gt;F)
+## group   1   0.757 0.3846
+##       721
+```
+Como se puede ver los resultados muestran que nuestro p-value es **0.3846** siendo esto mayor a 0.05, siendo la interpretación: La variable AreaIV muestra que tiene igualdad de varianzas, pues el valor p es mayor a 0.05.
+
+Si el resultado del valor p es menor a 0.05 se diría que no existen iguadad de varianzas
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #8F250C
+name: yo
+
+# Regresar a [Indice de Contenidos](#contents-slide)
+---
+
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #A53860
+name: DCA
+
+## Diseños Completamente Aleatorios (DCA)
+&lt;hr&gt;
+
+---
+
+&lt;br&gt;
+&lt;br&gt;&lt;br&gt;
+### En un diseño completamente al azar , solo se considera un factor principal en el experimento. Los sujetos de prueba se asignan a los niveles de tratamiento del factor primario al azar.
+
+La formula con la cual nos guiaríamos para plantearlo en R seria la siguiente
+
+&gt; **Respuesta  = constante  + efecto del tratamiento  + error **
+
+- En este caso la respuesta es la que obtendríamos después del analisis que estamos realizando
+- La constante ya esta implícita, por lo que no se obvia
+- El efecto del tratamiento, es con que hemos intervenido
+- El error al igual que la constante esta implícita por lo que también se obvia
+
+Ahora veamos como seria el procedimiento, y para esto vamos a utilizar los siguientes códigos
+
+---
+&lt;br&gt;&lt;br&gt;
+
+
+
+
+
+
+
+
+
+#### Primero iniciamos con llamar nuestra base de datos, vamos a utilizar el código **read_**, en este caso estoy utilizando **excel** donde estan mis datos
+
+````markdown
+dca &lt;- read_excel("D:\\Tesis investigación\\Diseños experimentales\\excels\\DCA_1.xlsx")
+```
+Con la función **tail** se puede observar las filas de nuestra base de datos
+
+````markdown
+tail(dca)
+```
+
+```
+## # A tibble: 6 × 3
+##      UE trt    rpta
+##   &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt;
+## 1     7 T1       70
+## 2     8 T1       75
+## 3     9 T4       50
+## 4    10 T1       67
+## 5    11 T4       42
+## 6    12 T3       88
+```
+
+Se puede observar que estan presentes las unidades experimentales **UE**, el tratamiento **trt** y la respuesta  **rpta**. Luego colocaríamos lo siguiente:
+
+
+---
+
+Colocamos la función **aov** que es ANOVA y luego entre parentesis, especificando de nuestra base de datos las variables respuesta y el tratamiento (refiriendonos a esto **dca$rpt*a** y **dca$trt**), teniendo esto entre las dos varaibles colocamos la **virgulilla** ( ~ )
+
+ ````markdown
+aov(dca$rpta ~ dca$trt)
+```
+
+Ahora lo guardamos este código **aov(dca$rpta ~ dca$trt)** utilizando un nombre X y &lt;-, en este caso utilizamos **uno &lt;-** para este ejemplo
+
+ ````markdown
+uno &lt;- aov(dca$rpta ~ dca$trt) 
+```
+
+
+Ahora con la funicón summary podemos ver los resultados
+
+ ````markdown
+summary(uno)
+```
+
+
+```r
+summary(uno)
+```
+
+```
+##             Df Sum Sq Mean Sq F value   Pr(&gt;F)    
+## dca$trt      3   9041  3013.6   61.61 7.17e-06 ***
+## Residuals    8    391    48.9                     
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+Interpretación
+Dado que el valor p (**Pr(&gt;F)**) es menor a 0.05 por lo que podriamos interpretar que existen diferencias estadisticamente significativas
+
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #8F250C
+name: yo
+
+# Regresar a [Indice de Contenidos](#contents-slide)
+---
+
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #432818
+name: DBCA
+
+## Diseños de Bloques Completos Aleatorios (DBCA)
+&lt;hr&gt;
+
+---
+
+- **Para poder seguir este análisis vamos verificar también la normalidad de nuestros datos y la igualdad de varianzas**
+
+Primero vamos mostrar la formula para que entendamos como se plantean en R
+
+&gt; **Respuesta  = constante + efecto de bloques + efecto del tratamiento  + error**
+
+- La **constante** y el **error** no se toman en consideración
+- La **Respuesta**, el **efecto de bloques** y el **efecto del tratamiento ** se consideran para el código
+
+Primero iniciamos con llamar nuestra base de datos y guardarla 
+
+````markdown
+dbca &lt;- read_excel("D:\\Tesis investigación\\Diseños experimentales\\excels\\DBCA_1.xlsx")
+```
+Con la función **tail** se puede observar las filas de nuestra base de datos
+
+
+```
+## # A tibble: 6 × 3
+##   trt   bloque  rpta
+##   &lt;chr&gt; &lt;chr&gt;  &lt;dbl&gt;
+## 1 A     IV        27
+## 2 B     IV        13
+## 3 C     IV        18
+## 4 D     IV        12
+## 5 E     IV        16
+## 6 F     IV        19
+```
+
+Se puede observar que estan presentes el tratamiento **trt**, el bloque **Bloque** la respuesta  **rpta**. Luego colocaríamos lo siguiente:
+
+---
+
+&lt;br&gt;
+
+Colocamos la función **aov** que es ANOVA y luego entre parentesis, especificando de nuestra base de datos la variable respuesta, el tratamiento y el bloque (refiriéndonos a esto **dbca$rpta** y **dbca$bloque + dbca$trt)**, teniendo esto, luego colocamos la **virgulilla** ( ~ )
+
+Guardamos este código **aov(dbca$rpta ~ dbca$bloque + dbca$trt)** utilizando un nombre X y &lt;-, en este caso utilizamos **dos &lt;-** para este ejemplo
+
+ ````markdown
+dos &lt;-aov(dbca$rpta ~ dbca$bloque + dbca$trt)
+```
+
+
+Ahora con la función summary podemos ver los resultados
+
+
+
+```r
+summary(dos)
+```
+
+```
+##             Df Sum Sq Mean Sq F value Pr(&gt;F)  
+## dbca$bloque  3   84.1   28.04   1.744 0.2009  
+## dbca$trt     5  344.7   68.94   4.289 0.0127 *
+## Residuals   15  241.1   16.08                 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+Interpretación
+Dado que el valor p **Pr(&gt;F)** es menor a 0.05 (osea 0.0127), por lo que rechazamos la hipótesis nula y podemos decir que existen diferencias estadisiticamente significativas
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #8F250C
+name: yo
+
+# Regresar a [Indice de Contenidos](#contents-slide)
+---
+
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #926C15
+name: DCL
+
+## Diseño Cuadrado Latino (DCL)
+&lt;hr&gt;
+
+---
+
+- **Para poder seguir este análisis vamos verificar también la normalidad de nuestros datos y la igualdad de varianzas**
+
+Primero vamos mostrar la formula para que entendamos como se plantean en R
+
+&gt; **Respuesta  = constante + efecto del tratamiento + efecto de la condición 1 (fila) + efecto de la condición 2 (columna) + error**
+
+Lo más importante que hay que tener es
+
+- La respuesta, los cuales serian los datos 
+- El efecto del tratamiento
+- Efecto de la condición 1 (fila)
+- Efecto de la condición 2 (columna)
+
+Ahora veamos como seria el procedimiento, y para esto vamos a utilizar los siguientes códigos
+
+Primero iniciamos con llamar nuestra base de datos, vamos a utilizar el código **read_**, en este caso estoy utilizando **excel** donde estan mis datos
+
+````markdown
+dcl &lt;- read_excel("D:\\Tesis investigación\\Diseños experimentales\\excels\\DCL_1.xlsx")
+```
+Con la función **tail** se puede observar las filas de nuestra base de datos
+
+````markdown
+tail(dcl)
+```
+---
+
+
+```
+## # A tibble: 6 × 4
+##   F     C     trt    rpta
+##   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt;
+## 1 F5    C4    C      59.4
+## 2 F1    C5    D      59.4
+## 3 F2    C5    A      48.7
+## 4 F3    C5    E      59.4
+## 5 F4    C5    C      55.9
+## 6 F5    C5    B      57.3
+```
+
+Se puede observar que estan presentes la respuesta **rpta**, el tratamiento **trt**, la fila **F** la columna **C**. Luego colocaríamos lo siguiente:
+
+Colocamos la función **aov** que es ANOVA y luego entre parentesis, especificando de nuestra base de datos las variables respuesta, el tratamiento, los datos de la Fila y Columna (refiriendonos a esto **dca$rpt*a** y **dcl$F + dcl$C + dcl$trt**), teniendo entre estos la **virgulilla** ( ~ )
+
+ ````markdown
+aov(dcl$rpta ~ dcl$F + dcl$C + dcl$trt)
+```
+
+Ahora lo guardamos este código **aov(dcl$rpta ~ dcl$F + dcl$C + dcl$trt)** utilizando un nombre X y &lt;-, en este caso utilizamos **uno &lt;-** para este ejemplo
+
+ ````markdown
+tres &lt;- aov(dcl$rpta ~ dcl$F + dcl$C + dcl$trt)
+```
+
+
+Ahora con la funicón summary podemos ver los resultados
+
+ ````markdown
+summary(tres)
+```
+---
+
+&lt;br&gt;&lt;br&gt;
+
+```
+##             Df Sum Sq Mean Sq F value   Pr(&gt;F)    
+## dcl$F        4   99.2   24.80   5.255   0.0111 *  
+## dcl$C        4   38.5    9.62   2.039   0.1527    
+## dcl$trt      4  522.3  130.57  27.668 5.62e-06 ***
+## Residuals   12   56.6    4.72                     
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+Interpretación
+Dado que el valor p (**Pr(&gt;F)**) es menor a 0.05 por lo que podriamos interpretar que existen diferencias estadisticamente significativas
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #8F250C
+name: yo
+
+# Regresar a [Indice de Contenidos](#contents-slide)
+---
+
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #5C8001
+name: 2k
+
+## Diseño Factorial (2k)
+&lt;hr&gt;
+
+---
+
+&lt;br&gt;
+
+- **Para poder seguir este análisis vamos verificar también la normalidad de nuestros datos y la igualdad de varianzas**
+
+Primero vamos mostrar la formula para que entendamos como se plantean en R
+
+&gt; **Respuesta = constante + efecto de A (Factor 1) + efecto de b (Factor 2) + + Interacción AXB + error**
+
+Lo que necesitamos para poder utilizar en R seria lo siguiente
+
+- La respuesta que seria lo obtenido en nuestros datos
+- Los efectos tanto de la A como B (osea los factores utilizados)
+- Con respecto a la interacción esta se va a obtener con las diferentes formas en que se escriba el código
+- Tanto el error como la constante se obvian 
+
+Luego iniciamos con llamar nuestra base de datos, vamos a utilizar el código **read_**, en este caso estoy utilizando **excel** donde estan mis datos
+
+````markdown
+facto &lt;- read_excel("D:\\Tesis investigación\\Diseños experimentales\\excels\\factorial.xlsx")
+```
+
+
+Con la función **tail** se puede observar las filas de nuestra base de datos
+
+````markdown
+tail(facto)
+```
+---
+
+
+```
+## # A tibble: 6 × 3
+##   A     B         Y
+##   &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt;
+## 1 a2    b1       12
+## 2 a2    b2       10
+## 3 a2    b2        5
+## 4 a2    b2        5
+## 5 a2    b2        7
+## 6 a2    b2        8
+```
+
+Se pueden observar los datos y los niveles de estos.
+
+Nosotros ahora debemos tener en cuenta que hay varias formas para escribir el código de nuestros datos para los diseños factoriales, como serian:
+
+````markdown
+1. aov(facto$Y ~ facto$A + facto$B + facto$A:facto$B)
+2. aov(facto$Y ~ facto$A + facto$B + facto$A*facto$B)
+3. aov(facto$Y ~ facto$A*facto$B)
+```
+Y los resultados nos saldrían igual, pero para poder entender mejor el código vamos a plantearlo de la siguiente manera
+
+````markdown
+aov(facto$Y ~ facto$A + facto$B + facto$A*facto$B)
+```
+Guardamos nuestra formula 
+
+````markdown
+cuatro &lt;- aov(facto$Y ~ facto$A + facto$B + facto$A*facto$B)
+```
+---
+
+name: Formula
+
+Y por último corremos **summary** y tendremos nuestros resultados
+
+````markdown
+summary(cuatro)
+```
+
+
+
+
+```
+##                 Df Sum Sq Mean Sq F value  Pr(&gt;F)   
+## facto$A          1  31.25   31.25   7.576 0.01416 * 
+## facto$B          1  61.25   61.25  14.848 0.00141 **
+## facto$A:facto$B  1   1.25    1.25   0.303 0.58959   
+## Residuals       16  66.00    4.13                   
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+Aquí se puede observar que con respecto a los factores A y B estos son estadisticamente significativos, pues sus valores p son menores a 0.05, sin embargo, con respecto a la interacción de estos factores no se muestra que exista esta. 
+
+Con respecto a como se podrían escribir factoriales de 3k, 4k o más, se puede plantear de la siguiente manera
+
+.panelset[
+.panel[.panel-name[3K]
+
+Fórmula y Código
+
+```prolog
+Respuesta = constante + efecto factor A + efecto factor B + efecto factor C + AB + AC + BC + ABC + error
+```
+````markdown
+aov(Respuesta ~ FactorA + FactorB + FactorC + A*B + A*C + B*C + A*B*C)
+```
+
+]
+
+.panel[.panel-name[4K]
+
+Fórmula y Código
+
+```prolog
+Respuesta = constante + efecto factor A + efecto factor B + efecto factor C efecto factor D + AB + AC + AD + BC + BD + CD + ABCD + error
+```
+````markdown
+aov(Respuesta ~ FactorA + FactorB + FactorC + FactorD + A*B + A*C + A*D + B*C + B*D + C*D + A*B*C*D)
+```
+]
+]
+---
+class: left, middle, inverse, center
+background-size: 70%
+background-color: #8F250C
+name: yo
+
+# Regresar a [Indice de Contenidos](#contents-slide)
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"slideNumberFormat": "%current%",
+"highlightStyle": "github",
+"highlightLines": true,
+"ratio": "16:9",
+"countIncrementalSlides": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
